@@ -155,6 +155,9 @@ _cos_upload_one_file() {
     json)
         content_type=application/json
         ;;
+    ico)
+        content_type=image/x-icon
+        ;;
     woff)
         content_type=font/woff
         ;;

@@ -106,6 +106,9 @@ _oss_upload_one_file() {
     json)
         Content_Type=application/json
         ;;
+    ico)
+        Content_Type=image/x-icon
+        ;;
     woff)
         Content_Type=font/woff
         ;;
