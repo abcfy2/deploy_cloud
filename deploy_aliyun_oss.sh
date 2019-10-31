@@ -85,6 +85,7 @@ aliyun_cdn_refresh() {
 
 _oss_upload_one_file() {
     file="${1}"
+    file="$(echo "${file}" | sed 's@^./@@')"
     if [ -z "${OSS_ACCESS_KEY_ID}" ] && [ -z "${OSS_ACCESS_KEY_SECRET}" ] && [ -z "${OSS_BUCKET}" ]; then
         echo "请设置OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET, OSS_BUCKET三个环境变量"
         exit 1
@@ -153,7 +154,7 @@ export -f _oss_upload_one_file
 oss_upload() {
     src="${1}"
     cd "${src}"
-    find -type f -printf "%P\0" | xargs -0 -I{} --no-run-if-empty -P10 bash -ec "_oss_upload_one_file '{}'"
+    find -type f -print0 | xargs -0 -I{} --no-run-if-empty -P10 bash -ec "_oss_upload_one_file '{}'"
 }
 
 main() {
