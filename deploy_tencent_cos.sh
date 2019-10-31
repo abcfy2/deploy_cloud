@@ -207,7 +207,7 @@ export -f _tx_rest
 cos_upload() {
     src="${1}"
     cd "${src}"
-    find -type f -print0 | xargs -0 -I{} --no-run-if-empty -P10 bash -exc "_cos_upload_one_file '{}'"
+    find -type f -print0 | xargs -0 -I{} --no-run-if-empty -P10 bash -ec "_cos_upload_one_file '{}'"
 }
 
 tx_cdn_refresh() {
