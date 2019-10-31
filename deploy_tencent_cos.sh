@@ -96,7 +96,8 @@ ${uri_path}
 ${params}
 ${headers}
 "
-    keytime="$(date +%s);$(date -d '+1 hour' +%s)"
+    now_ts="$(date +%s)"
+    keytime="${now_ts};$((now_ts + 3600))"
     signkey="$(echo -n "${keytime}" | openssl sha1 -binary -hmac "${secret_key}" | xxd -p)"
     http_string_sha1="$(echo -n "${http_string}" | openssl sha1 -binary | xxd -p)"
     string_to_sign="sha1
@@ -128,6 +129,7 @@ _tx_rest() {
 
 _cos_upload_one_file() {
     file="${1}"
+    file="$(echo "${file}" | sed 's@^./@@')"
     secret_id="${COS_SECRET_ID}"
     secret_key="${COS_SECRET_KEY}"
     bucket="${COS_BUCKET}"
@@ -141,7 +143,7 @@ _cos_upload_one_file() {
     request_date="$(LC_ALL=C TZ=GMT date +'%a, %d %b %Y %T %Z')"
     content_md5="$(openssl md5 -binary <"${file}" | base64)"
     extension="${file##*.}"
-    file_size="$(du -b "${file}" | cut -f1)"
+    file_size="$(stat -c '%s' "${file}")"
 
     case "${extension,,}" in
     js)
@@ -205,7 +207,7 @@ export -f _tx_rest
 cos_upload() {
     src="${1}"
     cd "${src}"
-    find -type f -printf "%P\0" | xargs -0 -I{} --no-run-if-empty -P10 bash -ec "_cos_upload_one_file '{}'"
+    find -type f -print0 | xargs -0 -I{} --no-run-if-empty -P10 bash -exc "_cos_upload_one_file '{}'"
 }
 
 tx_cdn_refresh() {
