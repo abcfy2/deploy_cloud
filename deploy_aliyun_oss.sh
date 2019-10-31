@@ -93,7 +93,7 @@ _oss_upload_one_file() {
     oss_endpoint="${OSS_ENDPOINT:-oss-cn-hangzhou-internal.aliyuncs.com}"
     host="${OSS_BUCKET}.${oss_endpoint}"
     Date="$(LC_ALL=C TZ=GMT date +'%a, %d %b %Y %T %Z')"
-    Content_MD5=$(openssl md5 -binary <"${file}" | base64)
+    Content_MD5="$(openssl md5 -binary <"${file}" | base64)"
     extension="${file##*.}"
 
     case "${extension,,}" in
@@ -127,11 +127,22 @@ _oss_upload_one_file() {
     Authorization="OSS ${OSS_ACCESS_KEY_ID}:${Signature}"
     file_size="$(du -h "${file}" | cut -f 1)"
 
-    echo "Uploading '${file}' to bucket: '${OSS_BUCKET}' path: '${storage_path}', content-type: '${Content_Type}', file-size: ${file_size}"
-    curl -XPUT -sfLkT "${file}" \
+    uploading_file_msg="Uploading '${file}' to bucket: '${OSS_BUCKET}' path: '${storage_path}', content-type: '${Content_Type}', file-size: ${file_size}"
+    set +e
+    result="$(curl -XPUT -sSfLkT "${file}" \
         -H "Content-Type: ${Content_Type}" \
         -H "Date: ${Date}" -H "Content-Md5: ${Content_MD5}" \
-        -H "Authorization: ${Authorization}" "https://${host}${storage_path}"
+        -H "Authorization: ${Authorization}" "https://${host}${storage_path}" 2>&1)"
+    error_code=$?
+    set -e
+
+    if [ ${error_code} -eq 0 ]; then
+        echo "${uploading_file_msg} success"
+    else
+        echo "${uploading_file_msg} failed, reason:
+${result}"
+        return ${error_code}
+    fi
 }
 
 export -f _oss_upload_one_file
