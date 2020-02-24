@@ -1,0 +1,22 @@
+name: Daily update docker images
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  check_and_update:
+    name: Check and update docker images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: |
+          UPSTREAM_VER="$(docker run --rm alpine:latest sh -c "awk -F '=' '/VERSION_ID/{print \$2}' /etc/os-release")"
+          DOWNSTREAM_VER="$(docker run --rm abcfy2/deploy-cloud sh -c "awk -F '=' '/VERSION_ID/{print \$2}' /etc/os-release")"
+          echo "upstream verion: ${UPSTREAM_VER}"
+          echo "downstream version: ${DOWNSTREAM_VER}"
+          [ "${UPSTREAM_VER}" != "${DOWNSTREAM_VER}" ] && \
+              curl -sSkLf -d "{\"source_type\": \"Branch\", \"source_name\": \"${BRANCH_NAME}\", \"build\": true}" -H 'Content-Type: application/json' "${DOCKER_HUB_BUILD_TRIGGER_URL}" || \
+              true
+    env:
+      DOCKER_HUB_BUILD_TRIGGER_URL: "${{ secrets.DOCKER_HUB_BUILD_TRIGGER_URL }}"
