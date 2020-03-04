@@ -62,7 +62,7 @@ aliyun_request_builder() {
 
 aliyun_rest() {
     query="${1}"
-    curl -fs "${aliyun_endpoint}?${query}"
+    curl --connect-timeout 10 --retry 10 --retry-delay 5 --retry-connrefused -fs "${aliyun_endpoint}?${query}"
 }
 
 aliyun_cdn_refresh() {
@@ -133,7 +133,7 @@ _oss_upload_one_file() {
 
     uploading_file_msg="Uploading '${file}' to bucket: '${OSS_BUCKET}' path: '${storage_path}', content-type: '${Content_Type}', file-size: ${file_size}"
     set +e
-    result="$(curl -XPUT -sSfLkT "${file}" \
+    result="$(curl -XPUT --connect-timeout 10 --retry 10 --retry-delay 5 --retry-connrefused -sSfLkT "${file}" \
         -H "Content-Type: ${Content_Type}" \
         -H "Date: ${Date}" -H "Content-Md5: ${Content_MD5}" \
         -H "Authorization: ${Authorization}" "https://${host}${storage_path}" 2>&1)"

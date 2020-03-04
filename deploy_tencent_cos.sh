@@ -123,7 +123,7 @@ _tx_rest() {
     [ "${method}" != "GET" ] && request_m="-X ${method}"
     [ -n "${upload_file}" ] && upload_opts=(-T "${upload_file}")
     [ -n "${body}" ] && body_opts=(-d "${body}")
-    curl -sSfLk ${request_m} "${curl_opts[@]}" "${upload_opts[@]}" "${body_opts[@]}" "${host}${path}${query}"
+    curl --connect-timeout 10 --retry 10 --retry-delay 5 --retry-connrefused -sSfLk ${request_m} "${curl_opts[@]}" "${upload_opts[@]}" "${body_opts[@]}" "${host}${path}${query}"
     return $?
 }
 
