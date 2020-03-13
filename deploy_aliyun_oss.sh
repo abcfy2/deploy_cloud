@@ -146,7 +146,7 @@ _oss_upload_one_file() {
             break
         else
             echo "${uploading_file_msg} failed, reason:
-${result}"
+${result}. Attempted: ${i}"
             sleep 5
         fi
     done
